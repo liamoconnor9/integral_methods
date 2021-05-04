@@ -33,6 +33,7 @@ RA5E8/*
 *.fdb_latexmk
 *.gz
 *.synctex
+*.asv
 hw3/PHY470-HW3_-_Kumar_Utkarsh-_2.pdf
 hw1/447_Project1_KumarUtkarsh.pdf
 hw1/LegendrePoly.m

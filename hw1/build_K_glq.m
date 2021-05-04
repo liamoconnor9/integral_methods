@@ -1,4 +1,7 @@
-function x = build_K_glq(N, k)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Builds the kernel matrix for repeated Trapezoid
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function K = build_K_glq(N, k)
 
 y = @(t) ((3/4)*cos(k*t)) + ((sin(k*t)*(1-(-1)^k))/(4*pi*k));
 xexact = @(t) cos(k*t);

@@ -1,38 +1,17 @@
-function x = build_K_trap(N, k)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Builds the kernel matrix for repeated Trapezoid
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [K, t_vec] = build_K_trap(N, k)
 
-y = @(t) ((3/4)*cos(k*t)) + ((sin(k*t)*(1-(-1)^k))/(4*pi*k));
-xexact = @(t) cos(k*t);
+% Uniform grid size
+dt = pi / 2.0 / N;
 
-lcoef = LegendrePoly(N);
-ldcoef = polyder(lcoef);
+% Quadrature points vector
+t_vec = linspace(0, pi / 2.0, N)';
 
-I = eye(N);
-
-dx = pi/(2*(N-1));
-svec = zeros(1, N);
-for i = 1:N
-    svec(i) = (i-1)*dx;
-end
-K = zeros(N,N);
-for i=1:N
-    for j = 1:N
-        K(i,j) = (dx * cos(k*(svec(i)+svec(j))))/pi;
-    end
-end
+% K is almost symetric. We halve the endpoints but all other weights are one 
+K = (dt * cos(k * (ones(N, 1) * t_vec' + t_vec * ones(1, N)))) / pi;
 K(:,1) = K(:,1)/2;
 K(:,N) = K(:,N)/2;
 
-
-
-A = I-K;
-
-f = y(svec);
-f = reshape(f, N, 1);
-
-x = ones(N,1);
-x = gs(A, f, 1e-6, x);
-
-xex = xexact(svec);
-xex = reshape(xex, N, 1);
-
-error = norm(x-xex, inf);
+end
