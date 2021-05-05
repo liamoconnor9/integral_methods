@@ -4,7 +4,7 @@
 function [K, t_vec] = build_K_trap(N, k)
 
 % Uniform grid size
-dt = pi / 2.0 / N;
+dt = pi / 2.0 / (N - 1);
 
 % Quadrature points vector
 t_vec = linspace(0, pi / 2.0, N)';

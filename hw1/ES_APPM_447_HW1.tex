@@ -15,6 +15,9 @@
 %% Sets page size and margins
 \usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 
+%% No indents
+\setlength\parindent{0pt}
+
 %% Useful packages
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -170,13 +173,15 @@ With this in mind we direct our focus towards numerical results.
 
 $^1$Gauss-Legendre weights and generalized interval transform are given on the handy-dandy Wikipedia page: \url{https://en.wikipedia.org/wiki/Gaussian_quadrature}.
 
-    % \begin{figure}[H]
-    %     \centering
-    %     \includegraphics[width=2in]{XXXX.PNG}
-    %     \caption{Maybe we need a figure}
-    %     \label{XXX}
-    % \end{figure}
+
     
+
+
+
+
+
+
+
     % \begin{figure}[H]
     %     \centering
     %     \subfloat{\includegraphics[height=4.99cm]{XXX.PNG}}
@@ -188,18 +193,83 @@ $^1$Gauss-Legendre weights and generalized interval transform are given on the h
 
 \end{description}
 
-\section*{Results}
+\section*{Results and Discussion}
+\subsection*{Trapezoid Rule}
+As previously noted, exact solutions are given by $\cos(ks)$. In Figure \ref{trap_error} we give the $L-\infty$ norm of the difference of the exact solution and our approximation as a function of resolution. Plotting on log-log scale reveals that the maximum error at any given quadrature points decays according to some power law. Recall that the slope of a log-log graph is equal to the exponent of this power law, i.e. in \ref{trap_error} the error shrinks three orders of magnitude over two orders of magnitude in resolution. Thus these data suggest empirically 
+\begin{align*}
+    |\vec{x} - \vec{x}_e| \sim N^{-2}
+\end{align*}
 
-\section*{Code}
+\noindent This agrees with our theoretical understanding---the trapezoidal rule \textit{should} converge like $\sim N^{-2}$ 
 
-\begin{lstlisting}
-%%%%%%%%%%%%%%%%%%%%%%%%
-%% QUESTION C
-%%%%%%%%%%%%%%%%%%%%%%%%
+\noindent \url{https://en.wikipedia.org/wiki/Trapezoidal_rule} 
 
-alpha = 0.1;
-beta = 0.1;
-a = 0.25;
-b = 1.0;
-\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=4.5in]{trap_error.png}
+    \caption{Maximum error for the trapezoidal rule decay according to some power law. Errors scale uniformly for various $k$: the vertical shift in this plot indicates a proportional decay in error. For $k=4$ and all other even integers, we obtain machine precision error for small $N$. }
+    \label{trap_error}
+\end{figure}
+
+For $k=4$ and all other even integers, we obtain machine precision error for small $N$. This is due to the symmetric nature of the solution $\cos (ks)$ on the interval $0<s<\pi/2$ when $k$ is even. This symmetry leads to cancellation which gives the correct result. In general this does not occur!
+
+Though we can (using the \texttt{Matlab Turbo-Encabulator}) compute the solution to $10^{-6}$ with the trapezoidal rule, we can easily approximate what necessary resolution is via extrapolation. This is justified in that we know the error scales according to some power law. Performing linear regression on the $\log-\log$ data yields
+\vspace{0.15cm}
+
+\texttt{\colorbox{yellow}{\$  For k = 1, error<1e-6 at N = 324}}
+\vspace{0.15cm}
+
+\texttt{\$  for k = 1, slope = -2.0202, intercept = -0.92529}
+\vspace{0.15cm}
+
+\texttt{\colorbox{yellow}{\$  For k = 4, error<1e-6 at N = 4}}
+\vspace{0.15cm}
+
+\texttt{\$  for k = 4, slope = 0.59596, intercept = -16.2534}
+\vspace{0.15cm}
+
+\texttt{\$  For k = 5, error<1e-6 at N = 730}
+\vspace{0.15cm}
+
+\texttt{\$  for k = 5, slope = -2.0231, intercept = -0.21669}
+\vspace{0.15cm}
+
+\texttt{\$  for k = 15, slope = -2.0649, intercept = 0.37311}
+\vspace{0.15cm}
+
+\texttt{\colorbox{yellow}{\$  For k = 5, error<1e-6 at N = 1255,}}
+\vspace{0.15cm}
+
+thereby confirming our theoretical prediction that the error scales like $N^{-2}$. We also obtain convergence rates from these intercept values. In the log-log plot, translations are synonymous with proportional scaling. In figure \ref{trap_error} we see that the errors behave identically, ignoring a vertical translation. \colorbox{yellow}{The intercepts are the exponents (base 10) of the convergence rates.}
+
+\subsection*{Gauss-Legendre Quadrature}
+
+We give the corresponding errors for Gauss-Legendre quadrature in Figure \ref{gl_error}. We can think of increasing resolution as appending higher order polynomials to our truncated basis. In this way, low order polynomials fail to capture the high frequency modes associated with large $k$. This is illustrated in the figure, where we see the $k = 1$ curve departing from error of order unity early on at small resolutions. The error criterion ($< 10^{-6}$) is satisfied at \colorbox{yellow}{$N = 4$ for $k=1$, $N = 9$ for $k = 4$, and $N = 19$ for $k = 15$}. For the $k = 4$ curve we see a similar departure near the center of the figure. The $k = 15$ curve only departs from unity near the end of the shown resolutions. This behavior is distinctly different from the trapezoidal rule where the approximation appears to get better in a consistent fashion.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=5in]{gl_error.png}
+    \caption{Maximum error for Gauss-Legendre quadrature do not decay uniformly according to some power law. In contrast with the trapezoidal rule, the error varies dramatically among different $k$ values at large resolution $N$. Here we satisfy the error $<10^{-6}$ requirement at $N = 4$ for $k = 1$.}
+    \label{gl_error}
+\end{figure}
+
+Convergence for $k = 15$ is expensive. This is due to the fact that it is a high-frequency function. We can relieve this by making a change of variables $t \to kt$, thereby allowing us to resolve the fast-spatial mode with low resolution.
+
+\section*{Convergence Verification}
+Suppose we did not know, a priori, the exact solution. Then the methods outlined above would be useful! We need to be prepared for this in the future.
+
+\subsection*{Gauss-Legendre Quadrature}
+ In the case of Gauss-Legendre, due to annihilation, we can employ Taylor's theorem. Recall that smooth/well-behaved functions can be approximated via Taylor series will the error bound being proportional to the supremum of the next highest-order derivative. This ties into the more general and somewhat elusive concept: in order to place restrictions on the error to make statements about convergence, we need to have some sort of information about the length-scale of the function. Otherwise the concept of discretization is meaningless. In this case, from the text, we can claim that the error $|Ef|$ of the quadrature of a function $f$ on an interval $(a, b)$ is approximattely bounded by 
+\begin{align*}
+    |Ef| &\lesssim 4 \sup |f^{(2N)}| \sqrt{\frac{N}{\pi}} \Big( \frac{e}{N} \Big)^{2N}
+\end{align*}
+where we know in this case $\sup |f^{(2N)}| = 2kN$. This explains why the high-frequency mode is so difficult to approximate! In this case $8k/\sqrt{pi}$ serves as a convergence rate as it is the proportionality constant between the error approximation and some function of resolution.
+
+\subsection*{Trapezoid Rule}
+For the Trapezoid rule we can examine the error in a controlled scenario. For example, letting $k = 1$ we have that the quadrature integrand $\cos s$ on $(0, \pi/2)$ is strictly concave down. It follows that the trapezoid rule with \textit{always} underestimate the region of integration. Thus as we increase $N$ the integral estimate grows monotonically. It follows from the \textit{Monotone Convergence Theorem} that the desired sum is the supremum of this sum of all estimates. This, combined with the fact that we know that the error must scale like $N^{-2}$ allows us to estimate the error. Recall that the approximation is accurate to machine precision for even $k$ due to symmetry, so we will curtail our discussion to odd $k$. If we had some information about the integrand (important), we could bound the error
+\begin{align*}
+    |Ef| &\leq \frac{\sup |f''(s)|}{12N^2}(b - a)^3
+\end{align*}
+as before. Here $\sup |f''(s)| = 2k$. Thus our convergence factor is given by $\frac{k\pi^3}{24}$.
+
 \end{document}
