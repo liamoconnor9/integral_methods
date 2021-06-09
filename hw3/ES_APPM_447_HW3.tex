@@ -74,6 +74,8 @@
 \fancyhead[R]{\textbf{HW 3 \qquad 6/9/2021 \qquad Liam O'Connor}}
 \fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
 
+\textbf{\textit{I used $i$ as both an index as well as the unit imaginary number, in hindsight that was a poor choice.}}
+
 \section*{Problem Statement}
 Consider the integro-differential equation
 \begin{align}
@@ -127,9 +129,11 @@ Recall that $J_n$ has series expansion
 \begin{align}
     J_n(z) &= \sum_{k = 0}^{\infty} \frac{(-1)^k}{2^{2k+n} k! (n+ k)! } z^{2k + n}\\
     \intertext{given by \cite{bessel1}. We also reproduce the series expansion of $Y_0$, given by \cite{bessel2} as}
-    Y_0(z) &= \frac{2}{\pi} J_0 (z) \log \Big( \frac{z}{2} \Big) - \frac{2}{\pi} \sum_{k=0}^{\infty} \frac{(-1)^k}{k!k!} \Big( \frac{z}{2} \Big)^{2k} \psi (k+1)
+    Y_0(z) &= \frac{2}{\pi} J_0 (z) \log \Big( \frac{z}{2} \Big) - \frac{2}{\pi} \sum_{k=0}^{\infty} \frac{(-1)^k}{k!k!} \Big( \frac{z}{2} \Big)^{2k} \psi (k+1) \\
+    &= \frac{2}{\pi} J_0 (z) \log \Big( \frac{z}{2} \Big) - \frac{2}{\pi} P(z)
 \end{align}
-where $\psi$ is the digamma function.
+where $\psi$ is the digamma function and we define $P(z)$ to be the replaced summation.
+The appropriate polynomial coefficients are approximated and discussed in further detail in \cite{bessel22}.
 We note the singular point at $x = 0$. 
 We continue by decomposing the complex functions into their real and imaginary components, substituting into equation 1, and equating the real and imaginary components. Letting $h(x) = u(x) + iv(x)$, we have that
 \begin{align}
@@ -147,6 +151,13 @@ Recall that a smooth function's integral can be approximated to second order as
     \int_{-\pi/2}^{\pi/2} f(x) dx &= \frac{\Delta x}{2}f_0 + \Delta x \sum_{k=1}^{N - 1} f_k + \frac{\Delta x}{2}f_N
 \end{align}
 where the shorthand $f_k$ refers to $f(x_k)$.
+
+For the nonsingular terms we need the following kernels
+\begin{align}
+    K_1 \vec{f} \cdot \hat{e_i} &= \frac{1}{2}\int_{-\pi/2}^{\pi/2} J_0 (|x_i - y|) f(y) dy\\
+    K_2 \vec{f} \cdot \hat{e_i} &= \frac{\pi}{2} \int_{-\pi/2}^{\pi/2} P (|x_i - y|) f(y) dy
+\end{align}
+whose definitions follow from the generalized trapezoidal rule equation 12.
 The nonsingular terms can all be dealt with in this way whereas the singular term requires a bit more care.
 We apply the product integration method. For some ``fixed'' $x_i$ have have that
 \begin{align}
@@ -189,7 +200,6 @@ Then, for convenience, we define the linear operator $A$ such that
     \frac{1}{2}\sum_{j=0}^N w_{ij} f_j &= A \vec{f} \cdot \hat{e_i}.
 \end{align}
 where the leading $1/2$ factor is to reflect the $i/2$ factor on the integral term in equation 1 (multiplication of $i$ has already been accounted for).
-A corresponding $B$ exists for the imaginary-valued subproblem.
 Finally we define the real and imaginary component vectors $\vec{b}$ and $\vec{c}$ of the nonhomogeneous terms where
 \begin{align}
     b_i = \cos(ax) \\
@@ -198,8 +208,8 @@ Finally we define the real and imaginary component vectors $\vec{b}$ and $\vec{c
 Our problem can then be collapsed into a single linear equation which approximates the real and imaginary components of equation 1 as
 \begin{align}
     \begin{bmatrix}
-        D + I - A & -B \\
-        B & D + I - A
+        D + I - A - K_2 & -K_1 \\
+        K_1 & D + I - A - K_2
     \end{bmatrix}
     \begin{bmatrix}
         \vec{u} \\ \vec{v}
@@ -207,6 +217,77 @@ Our problem can then be collapsed into a single linear equation which approximat
     &= \begin{bmatrix} \vec{b} \\ \vec{c} \end{bmatrix}.
 \end{align}
 From here we need only use a standard linear solver to obtain the approximate solution.
+\clearpage
+\section*{Results}
+We solve equation 1 using the methods described above for $a = 0.1$ and $a = 1.0$.
+We note apparent symmetry in the $a = 0.1$ case and clear asymmetry in the $a = 1.0$ case. 
+We also note that both solution obey the boundary conditions (thankfully).
+Recall that $a$ refers to the spatial wavenumber of the incoming disturbance.
+Accordingly, in the higher $a = 1$ case, we observe what might be perceived as a more complex membrane structure.
+
+\begin{figure}[H]
+    \centering
+    \subfloat{\includegraphics[width=5in]{ide21.png}}
+    \vspace{0.3cm}
+    \subfloat{\includegraphics[width=5in]{ide2.png}}
+    \caption{We give the complex solutions to equation 1 for $a = 0.1$ and $a = 1.0$. In both cases we specify a resolution of 128 grid points.}
+    \label{solns1}
+\end{figure}
+\clearpage
+We continue by attempting to describe the error with increasing resolution. Recall that as we double the resolution and compare the norm of the difference in solutions, we expect that value to decrease exponentially.
+More specifically, the $log_2$ of the quotient of these norms is the order of convergence. 
+If $h_{N}$ is the solution with resolution $N$ and $h_{N/2}$ is the solution with resolution $N/2$, then assuming we compare the appropriate values, we have that
+\begin{align}
+    OOC &\equiv \log_2 \Big( |h_{N} - h_{N/2}|_{\infty} \Big)
+\end{align}
+where $OOC$ refers to the order of convergence and we are taking an $L-\infty$ norm.
+Plots of the ``error'' norms are given in Figure~\ref{fig:error}.
+
+\begin{figure}[H]
+    \centering
+    \subfloat{\includegraphics[width=5in]{errors1.png}}
+    \vspace{0.3cm}
+    \subfloat{\includegraphics[width=5in]{errors2.png}}
+    \caption{Here we give the ``error'' norms with increasing resolution. It is clear in both cases that once a sufficiently large resolution $N$ is employed, the norms appear to decrease exponentially, with different factors in each case.}
+    \label{fig:error}
+\end{figure}
+
+\clearpage
+\vfill
+\vfill
+Finally, we report the norms of the ``errors'' and their respective quotients over various resolutions $N$ in Figure~\ref{fig:tab}.
+We observe different orders of convergence for various $a$.
+In the case of $a = 0.1$, we fail to achieve second (or even first) order convergence, with $OOF \approx 0.9$.
+Why we fell short of the intended goal is not clear.
+In constrast, we find that for $a = 1$, the algorithm converges quite rapidly with increasing $N$.
+Here we appear to achieve second order convergence.
+It should be noted that with increasing $a$, we ought to investigate large resolutions due to the possible relationship between the spatial wavenumber $a$ and the small-scale structure of $h$.
+\vfill
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=3.5in]{errors_tab.PNG}
+    \caption{Solution difference norms and their quotients for various resolutions and both values of $a$.}
+    \label{fig:tab}
+\end{figure}
+\vfill
+\section*{Discussion}
+Recall (from your 445 class!) that high frequency can be solved more readily via relaxation methods.
+We note that $a$ really controls the eigenfunctions of the homogeneous problem.
+Larger $a$ values are associated with high frequency modes.
+The solution reflects this as asymmetries and smaller-scale variation.
+Further, we see rapid convergence with increased $a$, suggesting that possibly the \texttt{MATLAB} solver is optimized to use indirect (possibly relaxation-related) matrix solvers on larger problems.
+Just speculating!
+
+We failed to approximate the solution here with the same fidelity as in previous assignments.
+Given more time this would something clearly worth investigating, though it could simply be due to \texttt{MATLAB}'s integration tools, that seems unlikely.
+Generally in cases like this, it's the grad student's fault and not the massive software company's.
+Though we used low order of convergence methods, we were able to solve this surprisingly complicated singular equation with great accuracy (I assume).
+It's easy to see that these sorts of problems can become arbitrarily complicated, with the potential for higher spatial dimension, nonlinear deformation of the membrane, etc.
+\vfill
+
+
+\clearpage
 \begin{thebibliography}{9}
     \bibitem{wolfram_hankle} Weisstein, Eric W. "Hankel Function of the First Kind." From MathWorld--A Wolfram Web Resource. \url{https://mathworld.wolfram.com/HankelFunctionoftheFirstKind.html}
     
@@ -216,5 +297,7 @@ From here we need only use a standard linear solver to obtain the approximate so
     \bibitem{bessel2} Lambers, Jim. "Bessel Functions of the Second Kind"
     \url{http://www.math.usm.edu/lambers/mat415/lecture16.pdf}
 
+    \bibitem{bessel22} Viktorovitch, M. "A boundary element solution to the vibration problem of bidimensional structures on a wide frequency range"
+    \url{https://www.witpress.com/Secure/elibrary/papers/BE95/BE95025FU.pdf}
 \end{thebibliography}
 \end{document}
