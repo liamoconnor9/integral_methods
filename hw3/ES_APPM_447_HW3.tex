@@ -238,7 +238,7 @@ We continue by attempting to describe the error with increasing resolution. Reca
 More specifically, the $log_2$ of the quotient of these norms is the order of convergence. 
 If $h_{N}$ is the solution with resolution $N$ and $h_{N/2}$ is the solution with resolution $N/2$, then assuming we compare the appropriate values, we have that
 \begin{align}
-    OOC &\equiv \log_2 \Big( |h_{N} - h_{N/2}|_{\infty} \Big)
+    OOC &\equiv \log_2 \frac{|h_{N} - h_{N/2}|_{\infty}}{|h_{2N} - h_{N}|_{\infty}}  
 \end{align}
 where $OOC$ refers to the order of convergence and we are taking an $L-\infty$ norm.
 Plots of the ``error'' norms are given in Figure~\ref{fig:error}.
